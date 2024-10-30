@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
 
 @Entity
 @Table (name = "libros")
@@ -13,7 +14,8 @@ public class Libro {
     private Long id;
     @Column(unique = true)
     private String titulo;
-    private String idioma;
+    @Enumerated(EnumType.STRING)
+    private Idioma idioma;
     private double numeroDescargas;
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
@@ -24,6 +26,12 @@ public class Libro {
     private List<Autor> autores = new ArrayList<>();
 
     public Libro() {
+    }
+
+    public Libro (DatosLibro datosLibro){
+        this.titulo = datosLibro.titulo();
+        this.idioma = Idioma.fromString(datosLibro.idioma().get(0));
+        this.numeroDescargas = OptionalDouble.of(Double.valueOf(datosLibro.numeroDescargas())).orElse(0);
     }
 
     public Long getId() {
@@ -42,11 +50,11 @@ public class Libro {
         this.titulo = titulo;
     }
 
-    public String getIdioma() {
+    public Idioma getIdioma() {
         return idioma;
     }
 
-    public void setIdioma(String idioma) {
+    public void setIdioma(Idioma idioma) {
         this.idioma = idioma;
     }
 

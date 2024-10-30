@@ -11,8 +11,9 @@ public class Autor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String fechaNacimiento;
-    private String fechaMuerte;
+    private String nombre;
+    private Integer fechaNacimiento;
+    private Integer fechaMuerte;
     @ManyToMany(mappedBy = "autores", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Libro> libros = new ArrayList<>();
 
@@ -27,19 +28,27 @@ public class Autor {
         this.id = id;
     }
 
-    public String getFechaNacimiento() {
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Integer getFechaNacimiento() {
         return fechaNacimiento;
     }
 
-    public void setFechaNacimiento(String fechaNacimiento) {
+    public void setFechaNacimiento(Integer fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
 
-    public String getFechaMuerte() {
+    public Integer getFechaMuerte() {
         return fechaMuerte;
     }
 
-    public void setFechaMuerte(String fechaMuerte) {
+    public void setFechaMuerte(Integer fechaMuerte) {
         this.fechaMuerte = fechaMuerte;
     }
 

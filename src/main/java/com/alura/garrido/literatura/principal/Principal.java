@@ -1,5 +1,6 @@
 package com.alura.garrido.literatura.principal;
 
+import com.alura.garrido.literatura.model.Datos;
 import com.alura.garrido.literatura.repository.LibroRepository;
 import com.alura.garrido.literatura.service.ConsumoAPI;
 import com.alura.garrido.literatura.service.ConvierteDatos;
@@ -72,6 +73,8 @@ public class Principal {
         System.out.println("opcion 1");
         var json = consumoAPI.obtenerDatos(URL_BASE);
         System.out.println(json);
+        var datosbusqueda = conversor.obtenerDatos(json, Datos.class);
+        System.out.println(datosbusqueda);
     }
 
     private void buscarLibroRegistrado() {
