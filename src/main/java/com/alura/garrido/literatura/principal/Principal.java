@@ -1,19 +1,13 @@
 package com.alura.garrido.literatura.principal;
 
 import com.alura.garrido.literatura.model.*;
-import com.alura.garrido.literatura.dto.*;
 import com.alura.garrido.literatura.repository.AutorRepository;
 import com.alura.garrido.literatura.repository.LibroRepository;
 import com.alura.garrido.literatura.service.ConsumoAPI;
 import com.alura.garrido.literatura.service.ConvierteDatos;
-import com.alura.garrido.literatura.service.LibroService;
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 public class Principal {
     private Scanner teclado = new Scanner(System.in);
@@ -25,11 +19,11 @@ public class Principal {
     private LibroRepository libroRepository;
     private AutorRepository autorRepository;
     private List<Libro> libros;
-    private LibroService libroService;
+    private List<Autor> autores;
 
 
     public Principal(AutorRepository autorRepository, LibroRepository libroRepository) {
-        this.autorRepository= autorRepository;
+        this.autorRepository = autorRepository;
         this.libroRepository = libroRepository;
 
     }
@@ -37,6 +31,7 @@ public class Principal {
 
 
     public void muestraElMenu() {
+
         var opcion = -1;
         while (opcion != 0) {
             var menu = """
@@ -47,39 +42,51 @@ public class Principal {
                     3 - Listar autores registrados
                     4 - Listar autores vivos en un determinado año
                     5 - Listar libros por idioma
+                    6 - Top 10 libros mas descargados
+                    7 - Buscar autor por nombre
                           
                     0 - Salir
                     """;
             System.out.println(menu);
-            opcion = teclado.nextInt();
-            teclado.nextLine();
+            try {
+                opcion = teclado.nextInt();
+                teclado.nextLine();
 
-            switch (opcion) {
-                case 1:
-                    buscarLibroWeb();
-                    break;
-                case 2:
-                    buscarLibroRegistrado();
-                    break;
-                case 3:
-                    buscarAutorRegistrado();
-                    break;
-                case 4:
-                    buscarAutorVivoPorAnio();
-                    break;
-                case 5:
-                    buscarLibroPorIdioma();
-                    break;
+                switch (opcion) {
+                    case 1:
+                        buscarLibroWeb();
+                        break;
+                    case 2:
+                        listarLibroRegistrado();
+                        break;
+                    case 3:
+                        listarAutorRegistrado();
+                        break;
+                    case 4:
+                        buscarAutorVivoPorAnio();
+                        break;
+                    case 5:
+                        buscarLibroPorIdioma();
+                        break;
+                    case 6:
+                        buacarTop10LibrosDescargados();
+                    case 7:
+                        buscarAutorPorNombre();
 
-                case 0:
-                    System.out.println("Cerrando la aplicación...");
-                    break;
-                default:
-                    System.out.println("Opción inválida");
+                    case 0:
+                        System.out.println("Cerrando la aplicación...");
+                        break;
+                    default:
+                        System.out.println("Opción inválida");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Ingrese una opción valida");
+                teclado.nextLine();
             }
         }
 
     }
+
 
     private Datos getDatosLibro() {
         System.out.println("Escribe el titulo del libro que desea buscar");
@@ -92,46 +99,64 @@ public class Principal {
     }
 
     private void buscarLibroWeb() {
-        Datos datos = getDatosLibro();
+        try {
+            Datos datos = getDatosLibro();
+            Libro libro = new Libro(datos.resultados().get(0));
+            Autor autor = new Autor(datos.resultados().get(0));
 
-        Libro libro = new Libro(datos.resultados().get(0));
-        Autor autor = new Autor(datos.resultados().get(0));
-        List<Libro> libros = new ArrayList<>();
 
-        //System.out.println(autor);
+            List<Libro> libros = new ArrayList<>();
 
-        List<Autor> autorList = autorRepository.findAll();
 
-        Optional<Autor> optionalAutor =autorList.stream()
-                .filter(a -> a.getNombre().contains(autor.getNombre()))
-                .findFirst();
-        if (optionalAutor.isPresent()){
-            System.out.println("encontro autor");
-            var autorEncontrado = optionalAutor.get();
+            List<Autor> autorList = autorRepository.findAll();
+
+            Optional<Autor> optionalAutor = autorList.stream()
+                    .filter(a -> a.getNombre().contains(autor.getNombre()))
+                    .findFirst();
+            if (optionalAutor.isPresent()) {
+                try{
+                    var autorEncontrado = optionalAutor.get();
 //            autorEncontrado.setLibros(librosAutor);
 //            autorRepository.save(autorEncontrado);
-            libro.setAutor(autorEncontrado);
-            libroRepository.save(libro);
-            System.out.println(libro);
+                    libro.setAutor(autorEncontrado);
+                    libroRepository.save(libro);
+                    System.out.println(libro);
+                }catch (DataIntegrityViolationException e){
+                    System.out.println("El libro ya esta registrado");
+                }
 
 
 
-        }else {
-            System.out.println("no encontro autor");
-            libros.add(libro);
-            autor.setLibros(libros);
-            autorRepository.save(autor);
-            System.out.println(autor);
+            } else {
+                libros.add(libro);
+                autor.setLibros(libros);
+                autorRepository.save(autor);
+                System.out.println(libro);
+            }
+        } catch (IndexOutOfBoundsException | IllegalArgumentException exception) {
+            System.out.println("libro no encontrado");
         }
 
+
     }
 
-    private void buscarLibroRegistrado() {
-        System.out.println("opcion 2");
+    private void listarLibroRegistrado() {
+        System.out.println("Libros Registrados\n");
+        libros = libroRepository.findAll();
+
+        libros.stream()
+                .sorted(Comparator.comparing(Libro::getTitulo))
+                .forEach(System.out::println);
+
     }
 
-    private void buscarAutorRegistrado() {
-        System.out.println("opcion 3");
+    private void listarAutorRegistrado() {
+        System.out.println("Autores Registrados\n");
+        autores = autorRepository.findAll();
+
+        autores.stream()
+                .sorted(Comparator.comparing(Autor::getNombre))
+                .forEach(System.out::println);
     }
 
     private void buscarAutorVivoPorAnio() {
@@ -141,4 +166,11 @@ public class Principal {
     private void buscarLibroPorIdioma() {
         System.out.println("opcion 5");
     }
+
+    private void buscarAutorPorNombre() {
+    }
+
+    private void buacarTop10LibrosDescargados() {
+    }
+
 }

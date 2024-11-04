@@ -1,13 +1,8 @@
 package com.alura.garrido.literatura.model;
 
-import com.alura.garrido.literatura.dto.DatosLibro;
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.OptionalDouble;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table (name = "libros")

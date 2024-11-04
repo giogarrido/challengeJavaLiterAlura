@@ -8,7 +8,8 @@ public enum Idioma{
     INGLES("en","Ingles"),
     FRANCES("fr","Frances"),
     PORTUGUES("pt","Portugues"),
-    ITALIANO("it","Italiano");
+    ITALIANO("it","Italiano"),
+    NO_IDENTIFICADO(" "," ");
 
     private String idiomaEspaniol;
     private String idiomaGutendex;
@@ -24,7 +25,7 @@ public enum Idioma{
                 return idioma;
             }
         }
-        throw new IllegalArgumentException("Ningun idioma encontrado: " +text);
+        return NO_IDENTIFICADO;
     }
 
 
@@ -35,7 +36,7 @@ public enum Idioma{
                 return idioma;
             }
         }
-        throw new IllegalArgumentException("Ningun idioma encontrado: " +text);
+        return NO_IDENTIFICADO;
     }
 
 }

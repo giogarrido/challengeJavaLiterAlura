@@ -1,6 +1,5 @@
 package com.alura.garrido.literatura.model;
 
-import com.alura.garrido.literatura.dto.DatosLibro;
 import jakarta.persistence.*;
 
 import java.util.List;
