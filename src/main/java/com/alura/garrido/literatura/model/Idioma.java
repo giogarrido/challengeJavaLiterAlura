@@ -39,4 +39,8 @@ public enum Idioma{
         return NO_IDENTIFICADO;
     }
 
+    public String getIdiomaEspaniol(){
+        return idiomaEspaniol;
+    }
+
 }

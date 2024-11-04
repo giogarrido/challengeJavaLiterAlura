@@ -8,6 +8,7 @@ import com.alura.garrido.literatura.service.ConvierteDatos;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Principal {
     private Scanner teclado = new Scanner(System.in);
@@ -69,7 +70,7 @@ public class Principal {
                         buscarLibroPorIdioma();
                         break;
                     case 6:
-                        buacarTop10LibrosDescargados();
+                        buscarTop10LibrosDescargados();
                     case 7:
                         buscarAutorPorNombre();
 
@@ -116,8 +117,7 @@ public class Principal {
             if (optionalAutor.isPresent()) {
                 try{
                     var autorEncontrado = optionalAutor.get();
-//            autorEncontrado.setLibros(librosAutor);
-//            autorRepository.save(autorEncontrado);
+
                     libro.setAutor(autorEncontrado);
                     libroRepository.save(libro);
                     System.out.println(libro);
@@ -160,17 +160,76 @@ public class Principal {
     }
 
     private void buscarAutorVivoPorAnio() {
-        System.out.println("opcion 4");
+        int anio= pedirAnio();
+        autores = autorRepository.autoresVivosEnAnio(anio);
+        autores.forEach(System.out::println);
+
     }
 
     private void buscarLibroPorIdioma() {
-        System.out.println("opcion 5");
+        idiomasDisponibles();
+        System.out.println("Escriba el idioma del libro que desea buscar: ");
+        var idioma = teclado.nextLine();
+        var idiomaBuscar = Idioma.fromEspaniol(idioma);
+        List<Libro> libroByIdioma = libroRepository.findByIdioma(idiomaBuscar);
+        System.out.println("Los libros encontrados con el idioma: " + idioma + " son:");
+        libroByIdioma.forEach(System.out::println);
+
+
+
+
+//        libros = libroRepository.findByIdioma(idioma);
+
+
     }
 
     private void buscarAutorPorNombre() {
+        System.out.println("Ingrese el nombre del autor que desea buscar: ");
+        String autorBuscar = teclado.nextLine();
+        Optional <Autor> autorOptional = autorRepository.findByNombreContainingIgnoreCase(autorBuscar);
+        if(autorOptional.isPresent()){
+            System.out.println("El auto buscado es:");
+            System.out.println(autorOptional.get());
+        }else {
+            System.out.println("Autor no encontrado");
+        }
+
     }
 
-    private void buacarTop10LibrosDescargados() {
+    private void buscarTop10LibrosDescargados() {
+        libros = libroRepository.librosTop10Descargados();
+        System.out.println("Top 10 libros mas descargados\n");
+        libros.forEach(System.out::println);
+        AtomicInteger posicion = new AtomicInteger(1);
+        libros.forEach(l -> System.out.println(posicion.getAndIncrement() + " " + l.getTitulo() + " con " + l.getNumeroDescargas() + " descargas."));
     }
+
+    private int pedirAnio() {
+
+        int anio = 0;
+        boolean valido = false;
+
+        while (!valido) {
+            System.out.print("Introduce el año: ");
+            try {
+                anio = teclado.nextInt();
+                valido = true;
+            } catch (InputMismatchException e) {
+                System.out.println("Año no válido. Por favor, introduce un número entero.");
+                teclado.nextLine(); // Limpiar el buffer
+            }
+        }
+
+        return anio;
+    }
+
+    private void idiomasDisponibles(){
+        System.out.println("Idiomas disponibles:");
+        for (Idioma idioma : Idioma.values()) {
+            System.out.println(idioma.getIdiomaEspaniol());
+        }
+    }
+
+
 
 }
