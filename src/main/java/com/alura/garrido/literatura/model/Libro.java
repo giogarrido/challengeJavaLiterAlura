@@ -1,10 +1,13 @@
 package com.alura.garrido.literatura.model;
 
+import com.alura.garrido.literatura.dto.DatosLibro;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table (name = "libros")
@@ -17,21 +20,19 @@ public class Libro {
     @Enumerated(EnumType.STRING)
     private Idioma idioma;
     private double numeroDescargas;
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(
-            name="libro_autor",
-            joinColumns = @JoinColumn(name = "libro_id"),
-            inverseJoinColumns = @JoinColumn(name = "autor_id")
-    )
-    private List<Autor> autores = new ArrayList<>();
+    @ManyToOne
+    private Autor autor;
 
     public Libro() {
     }
 
+
     public Libro (DatosLibro datosLibro){
         this.titulo = datosLibro.titulo();
         this.idioma = Idioma.fromString(datosLibro.idioma().get(0));
-        this.numeroDescargas = OptionalDouble.of(Double.valueOf(datosLibro.numeroDescargas())).orElse(0);
+        this.numeroDescargas = OptionalDouble.of(Double.valueOf(datosLibro.numeroDescargas().doubleValue())).orElse(0);
+
+
     }
 
     public Long getId() {
@@ -66,11 +67,21 @@ public class Libro {
         this.numeroDescargas = numeroDescargas;
     }
 
-    public List<Autor> getAutores() {
-        return autores;
+    public Autor getAutor() {
+        return autor;
     }
 
-    public void setAutores(List<Autor> autores) {
-        this.autores = autores;
+    public void setAutor(Autor autor) {
+        this.autor = autor;
+    }
+
+    @Override
+    public String toString() {
+        return  "\n--------Libro--------" +
+                "\nTitulo: " + titulo +
+                "\nAutores: " + autor.getNombre() +
+                "\nIdioma: " + idioma +
+                "\nNumero de Descargas: " + numeroDescargas  +
+                "\n---------------------";
     }
 }

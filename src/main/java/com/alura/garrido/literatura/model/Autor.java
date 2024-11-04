@@ -1,8 +1,8 @@
 package com.alura.garrido.literatura.model;
 
+import com.alura.garrido.literatura.dto.DatosLibro;
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,10 +14,17 @@ public class Autor {
     private String nombre;
     private Integer fechaNacimiento;
     private Integer fechaMuerte;
-    @ManyToMany(mappedBy = "autores", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Libro> libros = new ArrayList<>();
+    @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Libro> libros;
+
+
 
     public Autor() {
+    }
+    public Autor (DatosLibro datosLibro){
+        this.nombre = datosLibro.autor().get(0).nombre();
+        this.fechaMuerte = datosLibro.autor().get(0).fechaMuerte();
+        this.fechaNacimiento = datosLibro.autor().get(0).fechaNacimiento();
     }
 
     public Long getId() {
@@ -57,6 +64,18 @@ public class Autor {
     }
 
     public void setLibros(List<Libro> libros) {
+        libros.forEach(l ->l.setAutor(this));
         this.libros = libros;
+    }
+
+    @Override
+    public String toString() {
+        return
+                "\n---------Autor---------" +
+                "\nNombre: " + nombre + '\'' +
+                "\nFechaNacimiento: " + fechaNacimiento + '\'' +
+                "\nFechaMuerte: " + fechaMuerte + '\'' +
+                "\nLibros: " + libros.stream().map(Libro::getTitulo).toList() +
+                "\n-----------------------";
     }
 }

@@ -7,7 +7,8 @@ public enum Idioma{
     ESPAÑOL("es","Español"),
     INGLES("en","Ingles"),
     FRANCES("fr","Frances"),
-    PORTUGUES("pt","Portugues");
+    PORTUGUES("pt","Portugues"),
+    ITALIANO("it","Italiano");
 
     private String idiomaEspaniol;
     private String idiomaGutendex;

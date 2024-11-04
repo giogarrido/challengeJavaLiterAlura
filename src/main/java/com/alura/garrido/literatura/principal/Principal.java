@@ -1,12 +1,18 @@
 package com.alura.garrido.literatura.principal;
 
-import com.alura.garrido.literatura.model.Datos;
+import com.alura.garrido.literatura.model.*;
+import com.alura.garrido.literatura.dto.*;
+import com.alura.garrido.literatura.repository.AutorRepository;
 import com.alura.garrido.literatura.repository.LibroRepository;
 import com.alura.garrido.literatura.service.ConsumoAPI;
 import com.alura.garrido.literatura.service.ConvierteDatos;
+import com.alura.garrido.literatura.service.LibroService;
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Principal {
@@ -16,10 +22,16 @@ public class Principal {
     // autores entre rango de años
     //?author_year_start=1800&author_year_end=1899
     private ConvierteDatos conversor = new ConvierteDatos();
-    private LibroRepository repositorio;
+    private LibroRepository libroRepository;
+    private AutorRepository autorRepository;
+    private List<Libro> libros;
+    private LibroService libroService;
 
-    public Principal(LibroRepository repository) {
-        this.repositorio = repository;
+
+    public Principal(AutorRepository autorRepository, LibroRepository libroRepository) {
+        this.autorRepository= autorRepository;
+        this.libroRepository = libroRepository;
+
     }
 //    private List<DatosLibro> datosLibros = new ArrayList<>();
 
@@ -29,13 +41,13 @@ public class Principal {
         while (opcion != 0) {
             var menu = """
                     Elija la opción a través de su número:
-                    
+                                        
                     1 - Buscar libro por titulo
                     2 - Listar libros registrados
                     3 - Listar autores registrados
                     4 - Listar autores vivos en un determinado año
                     5 - Listar libros por idioma
-      
+                          
                     0 - Salir
                     """;
             System.out.println(menu);
@@ -69,12 +81,49 @@ public class Principal {
 
     }
 
-    private void buscarLibroWeb() {
-        System.out.println("opcion 1");
-        var json = consumoAPI.obtenerDatos(URL_BASE);
+    private Datos getDatosLibro() {
+        System.out.println("Escribe el titulo del libro que desea buscar");
+        var nombreLibro = teclado.nextLine();
+        var json = consumoAPI.obtenerDatos(URL_BASE + "?search=" + nombreLibro.replace(" ", "%20"));
         System.out.println(json);
-        var datosbusqueda = conversor.obtenerDatos(json, Datos.class);
-        System.out.println(datosbusqueda);
+        Datos datos = conversor.obtenerDatos(json, Datos.class);
+        System.out.println(datos);
+        return datos;
+    }
+
+    private void buscarLibroWeb() {
+        Datos datos = getDatosLibro();
+
+        Libro libro = new Libro(datos.resultados().get(0));
+        Autor autor = new Autor(datos.resultados().get(0));
+        List<Libro> libros = new ArrayList<>();
+
+        //System.out.println(autor);
+
+        List<Autor> autorList = autorRepository.findAll();
+
+        Optional<Autor> optionalAutor =autorList.stream()
+                .filter(a -> a.getNombre().contains(autor.getNombre()))
+                .findFirst();
+        if (optionalAutor.isPresent()){
+            System.out.println("encontro autor");
+            var autorEncontrado = optionalAutor.get();
+//            autorEncontrado.setLibros(librosAutor);
+//            autorRepository.save(autorEncontrado);
+            libro.setAutor(autorEncontrado);
+            libroRepository.save(libro);
+            System.out.println(libro);
+
+
+
+        }else {
+            System.out.println("no encontro autor");
+            libros.add(libro);
+            autor.setLibros(libros);
+            autorRepository.save(autor);
+            System.out.println(autor);
+        }
+
     }
 
     private void buscarLibroRegistrado() {
